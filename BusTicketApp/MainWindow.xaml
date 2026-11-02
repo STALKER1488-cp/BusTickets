@@ -1,0 +1,186 @@
+﻿<Window x:Class="BusTicketApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BusTicketApp"
+        xmlns:vm="clr-namespace:BusTicketApp.ViewModels"
+        mc:Ignorable="d"
+        Title="Автовокзал — Система бронирования" Height="600" Width="950">
+
+    <Window.Resources>
+        <vm:NullableToBoolConverter x:Key="NullableToBoolConverter"/>
+    </Window.Resources>
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Верхняя панель: Переключение режимов -->
+        <Border Grid.Row="0" Background="#F0F0F0" Padding="10" CornerRadius="5" Margin="5,0,5,10">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock Text="Режим работы: " VerticalAlignment="Center" FontWeight="Bold"/>
+                <ToggleButton Content="Администратор" IsChecked="{Binding IsAdminMode}" Width="120" Height="25"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2.2*"/>
+                <ColumnDefinition Width="1.5*"/>
+                <ColumnDefinition Width="2.5*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- 1. Рейсы + Поисковик -->
+            <GroupBox Header="1. Рейсы" Grid.Column="0" Margin="5" Padding="5">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Margin="0,0,0,10">
+                        <TextBlock Text="Поиск маршрута:" Foreground="Gray" Margin="0,0,0,3"/>
+                        <TextBox Text="{Binding SearchRouteQuery, UpdateSourceTrigger=PropertyChanged}" Height="25"/>
+                    </StackPanel>
+
+                    <ListBox Grid.Row="1" ItemsSource="{Binding FilteredTrips}" SelectedItem="{Binding SelectedTrip}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="5">
+                                    <TextBlock Text="{Binding Route}" FontSize="14" FontWeight="Bold"/>
+                                    <TextBlock Text="{Binding DepartureTime, StringFormat='Отправление: {0:dd.MM.yyyy HH:mm}'}" Foreground="Gray"/>
+                                    <TextBlock Text="{Binding Price, StringFormat='Цена: {0:C}'}" Foreground="Green" FontWeight="SemiBold"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </GroupBox>
+
+            <!-- 2. Выберите место -->
+            <GroupBox Header="2. Выберите место" Grid.Column="1" Margin="5" Padding="5">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding CurrentSeats}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <UniformGrid Columns="4"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ToggleButton Content="{Binding Number}" Height="40" Margin="4">
+                                    <ToggleButton.IsChecked>
+                                        <MultiBinding Converter="{StaticResource NullableToBoolConverter}" Mode="OneWay">
+                                            <Binding />
+                                            <Binding Path="DataContext.SelectedSeat" RelativeSource="{RelativeSource AncestorType=ItemsControl}"/>
+                                        </MultiBinding>
+                                    </ToggleButton.IsChecked>
+                                    <ToggleButton.InputBindings>
+                                        <MouseBinding MouseAction="LeftClick" 
+                                                      Command="{Binding DataContext.BuyTicketCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                      CommandParameter="{Binding}"/>
+                                    </ToggleButton.InputBindings>
+                                    <ToggleButton.Style>
+                                        <Style TargetType="ToggleButton">
+                                            <Setter Property="Background" Value="LightGreen"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsBooked}" Value="True">
+                                                    <Setter Property="Background" Value="LightCoral"/>
+                                                    <Setter Property="IsEnabled" Value="False"/>
+                                                </DataTrigger>
+                                                <Trigger Property="IsChecked" Value="True">
+                                                    <Setter Property="Background" Value="Gold"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ToggleButton.Style>
+                                </ToggleButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </GroupBox>
+
+            <!-- 3. Действия и Таблица -->
+            <Grid Grid.Column="2" Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <!-- Интерфейс Кассира -->
+                    <GroupBox Header="3. Оформление билета" Padding="10">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsAdminMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                        <StackPanel>
+                            <TextBlock Text="ФИО Пассажира:" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding PassengerName, UpdateSourceTrigger=PropertyChanged}" Height="25" Margin="0,0,0,10"/>
+                            <TextBlock Text="{Binding SelectedSeat.Number, StringFormat='Выбранное место: {0}'}" FontWeight="Bold" Margin="0,0,0,5"/>
+                            <Button Content="Купить билет" Command="{Binding BuyTicketCommand}" CommandParameter="{Binding SelectedSeat}"
+Height="35" Background="DodgerBlue" Foreground="White" FontWeight="Bold"/>
+
+                        </StackPanel>
+                    </GroupBox>
+                    
+                    <!-- Панель Администратора (Скрывается/показывается автоматически) -->
+                    <GroupBox Header="Панель Администратора" Padding="10" Background="#FFF2E6">
+                        <GroupBox.Style>
+                            <Style TargetType="GroupBox">
+                                <Setter Property="Visibility" Value="Collapsed"/> 
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsAdminMode}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </GroupBox.Style>
+                        <StackPanel>
+                            <TextBlock Text="Направление маршрута:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding SelectedTrip.Route, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBlock Text="Новое время отправления:" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding NewDepartureTime, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, StringFormat='{}{0:dd.MM.yyyy HH:mm}'}" />
+
+                            <TextBlock Text="Стоимость билета (P):" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <TextBox Text="{Binding SelectedTrip.Price, UpdateSourceTrigger=PropertyChanged}" />
+
+                          
+                            <Button Content="Сохранить изменения рейса" Command="{Binding UpdateTripTimeCommand}" Height="25" Margin="0,5,0,15"/>
+                            <Button Content="Добавить новый рейс" Command="{Binding AddTripCommand}" Height="25" Margin="0,5"/>
+                            <Button Content="Отменить выбранный рейс" Command="{Binding CancelTripCommand}" Height="25"/>
+
+                        </StackPanel>
+                    </GroupBox>
+                </Grid>
+                <!-- Таблица проданных билетов -->
+                <DataGrid x:Name="SoldTicketsGrid" AutoGenerateColumns="False" ItemsSource="{Binding SoldTickets}" IsReadOnly="True" Grid.Row="1">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="№ Билета" Binding="{Binding TicketNumber}" Width="100"/>
+                        <DataGridTextColumn Header="Маршрут" Binding="{Binding Route}" Width="*"/>
+
+                        <!-- НОВАЯ КОЛОНКА ДЛЯ ВРЕМЕНИ -->
+                        <DataGridTextColumn Header="Время отпр." Binding="{Binding DepartureTime, StringFormat={}{0:dd.MM.yyyy HH:mm}}" Width="120"/>
+
+                        <DataGridTextColumn Header="Пассажир" Binding="{Binding PassengerName}" Width="100"/>
+                        <DataGridTextColumn Header="Место" Binding="{Binding SeatNumber}" Width="60"/>
+
+                        <!-- НОВАЯ КОЛОНКА ДЛЯ АКТУАЛЬНОСТИ -->
+                        <DataGridTextColumn Header="Статус" Binding="{Binding Status}" Width="90"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>
