@@ -1,0 +1,464 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Автовокзал — Веб-система</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+        .header-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f0f0f0;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 2.2fr 1.5fr 2.5fr;
+            gap: 15px;
+        }
+
+        .panel {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 1px solid #ddd;
+        }
+
+        h3 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        /* Рейсы */
+        .search-box, .admin-input {
+            width: 100%;
+            padding: 6px;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .trip-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+            .trip-item:hover {
+                background-color: #f0f4f8;
+            }
+
+            .trip-item.selected {
+                background-color: #e2ecf7;
+                border-color: #2b579a;
+            }
+
+        .price {
+            color: green;
+            font-weight: bold;
+        }
+
+        /* Схема мест */
+        .seats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .seat {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            border: 1px solid;
+        }
+
+            .seat.available {
+                background-color: #e2f0d9;
+                border-color: #385723;
+            }
+
+            .seat.booked {
+                background-color: #fce4d6;
+                border-color: #c65911;
+                cursor: not-allowed;
+                opacity: 0.6;
+            }
+
+            .seat.selected {
+                background-color: #fff2cc;
+                border-color: #d6b656;
+            }
+
+        /* Кнопки и формы */
+        .btn {
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 5px;
+            border: none;
+        }
+
+        .btn-blue {
+            background: #1e90ff;
+            color: white;
+        }
+
+        .btn-orange {
+            background: #ff4500;
+            color: white;
+        }
+
+        .btn-gray {
+            background: #dcdcdc;
+            color: #333;
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            color: #666;
+        }
+
+        /* Таблица */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .admin-bg {
+            background-color: #fff2e6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-panel">
+        <h2>Автовокзал — Система бронирования</h2>
+        <div>
+            <strong>Режим работы: </strong>
+            <button id="toggleAdminBtn" class="btn-gray" style="width:140px; width: auto; padding: 6px 12px;" onclick="toggleAdminMode()">Админ</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 1. РЕЙСЫ -->
+        <div class="panel">
+            <h3>1. Рейсы</h3>
+            <label style="color:gray; font-size:12px;">Поиск маршрута:</label>
+            <input type="text" id="searchQuery" class="search-box" oninput="loadTrips()">
+            <div id="tripsList">Загрузка...</div>
+        </div>
+
+        <!-- 2. ВЫБОР МЕСТА -->
+        <div class="panel">
+            <h3>2. Выберите место</h3>
+            <div id="seatsContainer" class="seats-grid"></div>
+        </div>
+
+        <!-- 3. ДЕЙСТВИЯ И ТАБЛИЦА -->
+        <div>
+            <!-- Панель Кассира -->
+            <div id="cashierPanel" class="panel" style="margin-bottom: 15px;">
+                <h3>3. Оформление билета</h3>
+                <label>ФИО Пассажира:</label>
+                <input type="text" id="passengerName" class="search-box" oninput="validateCashierForm()">
+                <p id="selectedSeatInfo" style="font-weight:bold; margin: 8px 0;">Место не выбрано</p>
+                <button id="buyBtn" class="btn btn-blue" onclick="buyTicket()" disabled>Купить билет</button>
+            </div>
+
+            <!-- Панель Администратора -->
+            <div id="adminPanel" class="panel admin-bg hidden" style="margin-bottom: 15px;">
+                <h3>Панель Администратора</h3>
+                <label>Направление маршрута:</label>
+                <input type="text" id="adminRoute" class="admin-input">
+
+                <label>Новое время отправления:</label>
+                <input type="datetime-local" id="adminTime" class="admin-input">
+
+                <label>Стоимость билета (₽):</label>
+                <input type="number" id="adminPrice" class="admin-input">
+
+                <button id="saveTripBtn" class="btn btn-orange" onclick="saveTripChanges()" disabled>Сохранить изменения рейса</button>
+                <button class="btn btn-blue" style="margin-top:10px;" onclick="createNewTrip()">Добавить новый рейс</button>
+                <button id="deleteTripBtn" class="btn btn-gray" style="margin-top:10px; background:#ffcccb; color:red;" onclick="deleteTrip()" disabled>Отменить выбранный рейс</button>
+            </div>
+
+            <!-- История проданных билетов -->
+            <div class="panel">
+                <h3>Проданные билеты</h3>
+                <div style="max-height: 200px; overflow-y: auto;">
+                    <table>
+                        <thead>
+                            <tr><th>№ Билета</th><th>Маршрут</th><th>Пассажир</th><th>Место</th></tr>
+                        </thead>
+                        <tbody id="ticketsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allTrips = [];
+        let isAdminMode = false;
+        let selectedTripId = null;
+        let selectedSeatNumber = null;
+
+        // Поток загрузки данных с сервера (используем относительные пути для надежности)
+        async function loadTrips() {
+            const queryField = document.getElementById('searchQuery');
+            const query = queryField ? queryField.value : '';
+
+            try {
+                const response = await fetch(`/api/trips?search=${encodeURIComponent(query)}`);
+                if (!response.ok) throw new Error(`Ошибка: ${response.status}`);
+
+                allTrips = await response.json();
+                renderTrips();
+                loadTickets();
+
+                if (selectedTripId) {
+                    const currentTrip = allTrips.find(t => t.id === selectedTripId);
+                    if (currentTrip) renderSeats(currentTrip);
+                }
+            } catch (error) {
+                console.error("Критическая ошибка fetch:", error);
+                const list = document.getElementById('tripsList');
+                if (list) list.innerHTML = `<span style="color:red;">Ошибка соединения</span>`;
+            }
+        }
+
+        async function loadTickets() {
+            try {
+                const response = await fetch('/api/tickets');
+                if (!response.ok) return;
+                const tickets = await response.json();
+                const tbody = document.getElementById('ticketsTableBody');
+                if (tbody) {
+                    tbody.innerHTML = tickets.map(t => `
+                            <tr>
+                                <td>${t.ticketNumber}</td>
+                                <td>${t.route}</td>
+                                <td>${t.passengerName}</td>
+                                <td>${t.seatNumber}</td>
+                            </tr>
+                        `).join('');
+                }
+            } catch (error) {
+                console.error("Ошибка загрузки билетов:", error);
+            }
+        }
+
+        function renderTrips() {
+            const container = document.getElementById('tripsList');
+            if (!container) return;
+
+            if (allTrips.length === 0) {
+                container.innerHTML = '<p style="color:gray; font-style:italic;">Рейсы не найдены</p>';
+                return;
+            }
+
+            container.innerHTML = allTrips.map(trip => {
+                const date = new Date(trip.departureTime).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                return `
+                        <div class="trip-item ${trip.id === selectedTripId ? 'selected' : ''}" onclick="selectTrip(${trip.id})">
+                            <strong>${trip.route}</strong><br>
+                            <span style="font-size:12px; color:gray;">Отправление: ${date}</span><br>
+                            <span class="price">Цена: ${trip.price} ₽</span>
+                        </div>
+                    `;
+            }).join('');
+        }
+
+        function selectTrip(id) {
+            selectedTripId = id;
+            selectedSeatNumber = null;
+            renderTrips();
+
+            const trip = allTrips.find(t => t.id === id);
+            if (!trip) return;
+
+            // Заполняем админку безопасным способом (с проверкой элементов)
+            const routeInput = document.getElementById('adminRoute');
+            const priceInput = document.getElementById('adminPrice');
+            const timeInput = document.getElementById('adminTime');
+
+            if (routeInput) routeInput.value = trip.route;
+            if (priceInput) priceInput.value = trip.price;
+            if (timeInput) {
+                const d = new Date(trip.departureTime);
+                d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+                timeInput.value = d.toISOString().slice(0, 16);
+            }
+
+            const saveBtn = document.getElementById('saveTripBtn');
+            const deleteBtn = document.getElementById('deleteTripBtn');
+            if (saveBtn) saveBtn.disabled = false;
+            if (deleteBtn) deleteBtn.disabled = false;
+
+            renderSeats(trip);
+            const seatInfo = document.getElementById('selectedSeatInfo');
+            if (seatInfo) seatInfo.innerText = "Место не выбрано";
+            validateCashierForm();
+        }
+
+        function renderSeats(trip) {
+            const seatsContainer = document.getElementById('seatsContainer');
+            if (!seatsContainer) return;
+
+            seatsContainer.innerHTML = trip.seats.map(seat => `
+                    <div class="seat ${seat.isBooked ? 'booked' : (seat.number === selectedSeatNumber ? 'selected' : 'available')}"
+                         onclick="selectSeat(${seat.number}, this, ${seat.isBooked})">
+                        ${seat.number}
+                    </div>
+                `).join('');
+        }
+
+        function selectSeat(num, el, isBooked) {
+            if (isBooked) return;
+            document.querySelectorAll('.seat').forEach(s => {
+                if (!s.classList.contains('booked')) s.className = 'seat available';
+            });
+            el.classList.add('selected');
+            selectedSeatNumber = num;
+            const seatInfo = document.getElementById('selectedSeatInfo');
+            if (seatInfo) seatInfo.innerText = `Выбранное место: ${num}`;
+            validateCashierForm();
+        }
+
+        function validateCashierForm() {
+            const input = document.getElementById('passengerName');
+            const buyBtn = document.getElementById('buyBtn');
+            if (!input || !buyBtn) return;
+            const name = input.value.trim();
+            buyBtn.disabled = !(name && selectedSeatNumber);
+        }
+
+        function toggleAdminMode() {
+            isAdminMode = !isAdminMode;
+            const btn = document.getElementById('toggleAdminBtn');
+            const cashierPanel = document.getElementById('cashierPanel');
+            const adminPanel = document.getElementById('adminPanel');
+
+            if (!btn) return;
+
+            if (isAdminMode) {
+                btn.innerText = "Кассир";
+                btn.className = "btn-blue";
+                if (cashierPanel) cashierPanel.classList.add('hidden');
+                if (adminPanel) adminPanel.classList.remove('hidden');
+            } else {
+                btn.innerText = "Администратор";
+                btn.className = "btn-gray";
+                if (cashierPanel) cashierPanel.classList.remove('hidden');
+                if (adminPanel) adminPanel.classList.add('hidden');
+            }
+        }
+
+        async function buyTicket() {
+            const name = document.getElementById('passengerName').value.trim();
+            try {
+                const response = await fetch('/api/tickets/buy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ tripId: selectedTripId, seatNumber: selectedSeatNumber, passengerName: name })
+                });
+                if (response.ok) {
+                    alert("Билет успешно оформлен!");
+                    document.getElementById('passengerName').value = '';
+                    selectedSeatNumber = null;
+                    await loadTrips();
+                }
+            } catch (error) {
+                alert("Ошибка выполнения операции.");
+            }
+        }
+
+        async function saveTripChanges() {
+            const route = document.getElementById('adminRoute').value.trim();
+            const time = document.getElementById('adminTime').value;
+            const price = document.getElementById('adminPrice').value;
+
+            try {
+                await fetch(`/api/admin/trips/${selectedTripId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ route, departureTime: time, price: parseFloat(price) })
+                });
+                alert("Рейс изменен!");
+                await loadTrips();
+            } catch (e) { alert("Ошибка сохранения"); }
+        }
+
+        async function createNewTrip() {
+            const route = document.getElementById('adminRoute').value.trim() || "Новый маршрут";
+            const time = document.getElementById('adminTime').value || new Date().toISOString();
+            const price = document.getElementById('adminPrice').value || 1000;
+
+            try {
+                await fetch('/api/admin/trips', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ route, departureTime: time, price: parseFloat(price) })
+                });
+                alert("Рейс добавлен!");
+                await loadTrips();
+            } catch (e) { alert("Ошибка добавления"); }
+        }
+
+        async function deleteTrip() {
+            if (!confirm("Удалить рейс?")) return;
+            try {
+                await fetch(`/api/admin/trips/${selectedTripId}`, { method: 'DELETE' });
+                selectedTripId = null;
+                selectedSeatNumber = null;
+                await loadTrips();
+                document.getElementById('seatsContainer').innerHTML = '';
+            } catch (e) { alert("Ошибка удаления"); }
+        }
+
+        // Ждем полной готовности структуры документа DOM, прежде чем слать запросы
+        document.addEventListener("DOMContentLoaded", () => {
+            loadTrips();
+        });
+    </script>
+</body>
+</html>
