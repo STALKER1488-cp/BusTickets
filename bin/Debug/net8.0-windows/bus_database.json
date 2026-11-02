@@ -1,0 +1,269 @@
+{
+  "Trips": [
+    {
+      "Id": 1,
+      "Route": "\u041C\u043E\u0441\u043A\u0432\u0430 \u2014 \u0421\u0430\u043D\u043A\u0442-\u041F\u0435\u0442\u0435\u0440\u0431\u0443\u0440\u0433",
+      "DepartureTime": "2026-10-27T14:30:00+03:00",
+      "Price": 1500,
+      "Seats": [
+        {
+          "Number": 1,
+          "IsBooked": false
+        },
+        {
+          "Number": 2,
+          "IsBooked": false
+        },
+        {
+          "Number": 3,
+          "IsBooked": false
+        },
+        {
+          "Number": 4,
+          "IsBooked": false
+        },
+        {
+          "Number": 5,
+          "IsBooked": false
+        },
+        {
+          "Number": 6,
+          "IsBooked": false
+        },
+        {
+          "Number": 7,
+          "IsBooked": true
+        },
+        {
+          "Number": 8,
+          "IsBooked": false
+        },
+        {
+          "Number": 9,
+          "IsBooked": false
+        },
+        {
+          "Number": 10,
+          "IsBooked": false
+        },
+        {
+          "Number": 11,
+          "IsBooked": false
+        },
+        {
+          "Number": 12,
+          "IsBooked": false
+        },
+        {
+          "Number": 13,
+          "IsBooked": false
+        },
+        {
+          "Number": 14,
+          "IsBooked": true
+        },
+        {
+          "Number": 15,
+          "IsBooked": false
+        },
+        {
+          "Number": 16,
+          "IsBooked": false
+        },
+        {
+          "Number": 17,
+          "IsBooked": false
+        },
+        {
+          "Number": 18,
+          "IsBooked": false
+        },
+        {
+          "Number": 19,
+          "IsBooked": false
+        },
+        {
+          "Number": 20,
+          "IsBooked": false
+        }
+      ]
+    },
+    {
+      "Id": 2,
+      "Route": "\u041A\u0440\u0430\u0441\u043D\u043E\u0434\u0430\u0440 \u2014 \u0421\u043E\u0447\u0438",
+      "DepartureTime": "2026-10-28T08:00:00+03:00",
+      "Price": 800,
+      "Seats": [
+        {
+          "Number": 1,
+          "IsBooked": false
+        },
+        {
+          "Number": 2,
+          "IsBooked": false
+        },
+        {
+          "Number": 3,
+          "IsBooked": false
+        },
+        {
+          "Number": 4,
+          "IsBooked": false
+        },
+        {
+          "Number": 5,
+          "IsBooked": false
+        },
+        {
+          "Number": 6,
+          "IsBooked": false
+        },
+        {
+          "Number": 7,
+          "IsBooked": true
+        },
+        {
+          "Number": 8,
+          "IsBooked": false
+        },
+        {
+          "Number": 9,
+          "IsBooked": false
+        },
+        {
+          "Number": 10,
+          "IsBooked": false
+        },
+        {
+          "Number": 11,
+          "IsBooked": false
+        },
+        {
+          "Number": 12,
+          "IsBooked": false
+        },
+        {
+          "Number": 13,
+          "IsBooked": false
+        },
+        {
+          "Number": 14,
+          "IsBooked": true
+        },
+        {
+          "Number": 15,
+          "IsBooked": false
+        },
+        {
+          "Number": 16,
+          "IsBooked": false
+        },
+        {
+          "Number": 17,
+          "IsBooked": false
+        },
+        {
+          "Number": 18,
+          "IsBooked": false
+        },
+        {
+          "Number": 19,
+          "IsBooked": false
+        },
+        {
+          "Number": 20,
+          "IsBooked": false
+        }
+      ]
+    },
+    {
+      "Id": 3,
+      "Route": "\u041D\u043E\u0432\u043E\u0441\u0438\u0431\u0438\u0440\u0441\u043A \u2014 \u0422\u043E\u043C\u0441\u043A",
+      "DepartureTime": "2026-10-29T21:15:00+03:00",
+      "Price": 1200,
+      "Seats": [
+        {
+          "Number": 1,
+          "IsBooked": false
+        },
+        {
+          "Number": 2,
+          "IsBooked": false
+        },
+        {
+          "Number": 3,
+          "IsBooked": false
+        },
+        {
+          "Number": 4,
+          "IsBooked": false
+        },
+        {
+          "Number": 5,
+          "IsBooked": false
+        },
+        {
+          "Number": 6,
+          "IsBooked": false
+        },
+        {
+          "Number": 7,
+          "IsBooked": true
+        },
+        {
+          "Number": 8,
+          "IsBooked": false
+        },
+        {
+          "Number": 9,
+          "IsBooked": false
+        },
+        {
+          "Number": 10,
+          "IsBooked": false
+        },
+        {
+          "Number": 11,
+          "IsBooked": false
+        },
+        {
+          "Number": 12,
+          "IsBooked": false
+        },
+        {
+          "Number": 13,
+          "IsBooked": false
+        },
+        {
+          "Number": 14,
+          "IsBooked": true
+        },
+        {
+          "Number": 15,
+          "IsBooked": false
+        },
+        {
+          "Number": 16,
+          "IsBooked": false
+        },
+        {
+          "Number": 17,
+          "IsBooked": false
+        },
+        {
+          "Number": 18,
+          "IsBooked": false
+        },
+        {
+          "Number": 19,
+          "IsBooked": false
+        },
+        {
+          "Number": 20,
+          "IsBooked": false
+        }
+      ]
+    }
+  ],
+  "SoldTickets": []
+}
