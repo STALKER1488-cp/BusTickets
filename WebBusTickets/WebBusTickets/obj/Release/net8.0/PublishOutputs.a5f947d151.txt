@@ -1,0 +1,8 @@
+F:\BusTicketApp\WebBusTickets\WebBusTickets\obj\Release\net8.0\PubTmp\Out\WebBusTickets.exe
+F:\BusTicketApp\WebBusTickets\WebBusTickets\obj\Release\net8.0\PubTmp\Out\appsettings.Development.json
+F:\BusTicketApp\WebBusTickets\WebBusTickets\obj\Release\net8.0\PubTmp\Out\appsettings.json
+F:\BusTicketApp\WebBusTickets\WebBusTickets\obj\Release\net8.0\PubTmp\Out\bus_database.json
+F:\BusTicketApp\WebBusTickets\WebBusTickets\obj\Release\net8.0\PubTmp\Out\WebBusTickets.dll
+F:\BusTicketApp\WebBusTickets\WebBusTickets\obj\Release\net8.0\PubTmp\Out\WebBusTickets.deps.json
+F:\BusTicketApp\WebBusTickets\WebBusTickets\obj\Release\net8.0\PubTmp\Out\WebBusTickets.runtimeconfig.json
+F:\BusTicketApp\WebBusTickets\WebBusTickets\obj\Release\net8.0\PubTmp\Out\WebBusTickets.pdb

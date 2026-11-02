@@ -227,7 +227,14 @@
                 <div style="max-height: 200px; overflow-y: auto;">
                     <table>
                         <thead>
-                            <tr><th>№ Билета</th><th>Маршрут</th><th>Пассажир</th><th>Место</th></tr>
+                            <tr>
+                                <th>№ Билета</th>
+                                <th>Маршрут</th>
+                                <th>Дата отправления</th>
+                                <th>Актуальность</th>
+                                <th>Пассажир</th>
+                                <th>Место</th>
+                            </tr>
                         </thead>
                         <tbody id="ticketsTableBody"></tbody>
                     </table>
@@ -237,58 +244,95 @@
     </div>
 
     <script>
-        let allTrips = [];
-        let isAdminMode = false;
-        let selectedTripId = null;
-        let selectedSeatNumber = null;
+        var allTrips = [];
+        var isAdminMode = false;
+        var selectedTripId = null;
+        var selectedSeatNumber = null;
 
-        // Поток загрузки данных с сервера (используем относительные пути для надежности)
+        // 1. Загрузка рейсов с сервера
         async function loadTrips() {
-            const queryField = document.getElementById('searchQuery');
-            const query = queryField ? queryField.value : '';
+            var queryField = document.getElementById('searchQuery');
+            var query = queryField ? queryField.value : '';
 
             try {
-                const response = await fetch(`/api/trips?search=${encodeURIComponent(query)}`);
-                if (!response.ok) throw new Error(`Ошибка: ${response.status}`);
+                var response = await fetch('/api/trips?search=' + encodeURIComponent(query));
+                if (!response.ok) throw new Error('Ошибка: ' + response.status);
 
                 allTrips = await response.json();
                 renderTrips();
                 loadTickets();
 
                 if (selectedTripId) {
-                    const currentTrip = allTrips.find(t => t.id === selectedTripId);
+                    var currentTrip = allTrips.find(function (t) { return t.id === selectedTripId; });
                     if (currentTrip) renderSeats(currentTrip);
                 }
             } catch (error) {
                 console.error("Критическая ошибка fetch:", error);
-                const list = document.getElementById('tripsList');
-                if (list) list.innerHTML = `<span style="color:red;">Ошибка соединения</span>`;
+                var list = document.getElementById('tripsList');
+                if (list) list.innerHTML = '<span style="color:red;">Ошибка соединения</span>';
             }
         }
 
+        // 2. Загрузка проданных билетов в таблицу
         async function loadTickets() {
             try {
-                const response = await fetch('/api/tickets');
-                if (!response.ok) return;
-                const tickets = await response.json();
-                const tbody = document.getElementById('ticketsTableBody');
-                if (tbody) {
-                    tbody.innerHTML = tickets.map(t => `
-                            <tr>
-                                <td>${t.ticketNumber}</td>
-                                <td>${t.route}</td>
-                                <td>${t.passengerName}</td>
-                                <td>${t.seatNumber}</td>
-                            </tr>
-                        `).join('');
-                }
+                var response = await fetch('/api/tickets');
+                if (!response.ok) throw new Error('Ошибка: ' + response.status);
+
+                var tickets = await response.json();
+                var tbody = document.getElementById('ticketsTableBody');
+                tbody.innerHTML = '';
+
+                var now = new Date();
+
+                tickets.forEach(function (ticket) {
+                    var tr = document.createElement('tr');
+                    var departureField = ticket.DepartureTime || ticket.departureTime;
+                    var departureDate = departureField ? new Date(departureField) : null;
+
+                    var formattedDate = '—';
+                    var statusBadge = '—';
+
+                    if (departureDate && !isNaN(departureDate.getTime())) {
+                        formattedDate = departureDate.toLocaleString('ru-RU', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+
+                        var isActual = departureDate >= now;
+                        statusBadge = isActual
+                            ? '<span style="color: green; font-weight: bold;">Предстоит</span>'
+                            : '<span style="color: gray; font-style: italic;">Архивный</span>';
+                    }
+
+                    var tktNum = ticket.TicketNumber || ticket.ticketNumber || '—';
+                    var tktRoute = ticket.Route || ticket.route || '—';
+                    var tktPassenger = ticket.PassengerName || ticket.passengerName || '—';
+                    var tktSeat = ticket.SeatNumber || ticket.seatNumber || '—';
+
+                    tr.innerHTML = '<td>' + tktNum + '</td>' +
+                        '<td>' + tktRoute + '</td>' +
+                        '<td>' + formattedDate + '</td>' +
+                        '<td>' + statusBadge + '</td>' +
+                        '<td>' + tktPassenger + '</td>' +
+                        '<td>' + tktSeat + '</td>';
+                    tbody.appendChild(tr);
+                });
             } catch (error) {
-                console.error("Ошибка загрузки билетов:", error);
+                console.error("Критическая ошибка при загрузке билетов:", error);
             }
         }
 
+        window.addEventListener('DOMContentLoaded', function () {
+            loadTrips();
+        });
+
+        // 3. Отрисовка списка доступных рейсов в левой панели
         function renderTrips() {
-            const container = document.getElementById('tripsList');
+            var container = document.getElementById('tripsList');
             if (!container) return;
 
             if (allTrips.length === 0) {
@@ -296,87 +340,101 @@
                 return;
             }
 
-            container.innerHTML = allTrips.map(trip => {
-                const date = new Date(trip.departureTime).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                return `
-                        <div class="trip-item ${trip.id === selectedTripId ? 'selected' : ''}" onclick="selectTrip(${trip.id})">
-                            <strong>${trip.route}</strong><br>
-                            <span style="font-size:12px; color:gray;">Отправление: ${date}</span><br>
-                            <span class="price">Цена: ${trip.price} ₽</span>
-                        </div>
-                    `;
-            }).join('');
+            var html = '';
+            allTrips.forEach(function (trip) {
+                var tripRoute = trip.route || trip.Route;
+                var tripPrice = trip.price || trip.Price;
+                var tripTime = trip.departureTime || trip.DepartureTime;
+                var date = new Date(tripTime).toLocaleString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                var className = 'trip-item' + (trip.id === selectedTripId ? ' selected' : '');
+
+                html += '<div class="' + className + '" onclick="selectTrip(' + trip.id + ')">' +
+                    '<strong>' + tripRoute + '</strong><br>' +
+                    '<span style="font-size:12px; color:gray;">Отправление: ' + date + '</span><br>' +
+                    '<span class="price">Цена: ' + tripPrice + ' ₽</span>' +
+                    '</div>';
+            });
+            container.innerHTML = html;
         }
 
+        // 4. Выбор конкретного рейса
         function selectTrip(id) {
             selectedTripId = id;
             selectedSeatNumber = null;
             renderTrips();
 
-            const trip = allTrips.find(t => t.id === id);
+            var trip = allTrips.find(function (t) { return t.id === id; });
             if (!trip) return;
 
-            // Заполняем админку безопасным способом (с проверкой элементов)
-            const routeInput = document.getElementById('adminRoute');
-            const priceInput = document.getElementById('adminPrice');
-            const timeInput = document.getElementById('adminTime');
+            var routeInput = document.getElementById('adminRoute');
+            var priceInput = document.getElementById('adminPrice');
+            var timeInput = document.getElementById('adminTime');
 
-            if (routeInput) routeInput.value = trip.route;
-            if (priceInput) priceInput.value = trip.price;
+            if (routeInput) routeInput.value = trip.route || trip.Route;
+            if (priceInput) priceInput.value = trip.price || trip.Price;
             if (timeInput) {
-                const d = new Date(trip.departureTime);
+                var tripTime = trip.departureTime || trip.DepartureTime;
+                var d = new Date(tripTime);
                 d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
                 timeInput.value = d.toISOString().slice(0, 16);
             }
 
-            const saveBtn = document.getElementById('saveTripBtn');
-            const deleteBtn = document.getElementById('deleteTripBtn');
+            var saveBtn = document.getElementById('saveTripBtn');
+            var deleteBtn = document.getElementById('deleteTripBtn');
             if (saveBtn) saveBtn.disabled = false;
             if (deleteBtn) deleteBtn.disabled = false;
 
             renderSeats(trip);
-            const seatInfo = document.getElementById('selectedSeatInfo');
+            var seatInfo = document.getElementById('selectedSeatInfo');
             if (seatInfo) seatInfo.innerText = "Место не выбрано";
             validateCashierForm();
         }
 
+        // 5. Отрисовка схемы мест автобуса
         function renderSeats(trip) {
-            const seatsContainer = document.getElementById('seatsContainer');
+            var seatsContainer = document.getElementById('seatsContainer');
             if (!seatsContainer) return;
 
-            seatsContainer.innerHTML = trip.seats.map(seat => `
-                    <div class="seat ${seat.isBooked ? 'booked' : (seat.number === selectedSeatNumber ? 'selected' : 'available')}"
-                         onclick="selectSeat(${seat.number}, this, ${seat.isBooked})">
-                        ${seat.number}
-                    </div>
-                `).join('');
+            var seatsList = trip.seats || trip.Seats || [];
+            var html = '';
+            seatsList.forEach(function (seat) {
+                var sNum = seat.number || seat.Number;
+                var sBooked = seat.isBooked || seat.IsBooked;
+                var isSel = (sNum === selectedSeatNumber);
+                var className = 'seat ' + (sBooked ? 'booked' : (isSel ? 'selected' : 'available'));
+
+                html += '<div class="' + className + '" onclick="selectSeat(' + sNum + ', this, ' + sBooked + ')">' +
+                    sNum +
+                    '</div>';
+            });
+            seatsContainer.innerHTML = html;
         }
 
         function selectSeat(num, el, isBooked) {
             if (isBooked) return;
-            document.querySelectorAll('.seat').forEach(s => {
+            document.querySelectorAll('.seat').forEach(function (s) {
                 if (!s.classList.contains('booked')) s.className = 'seat available';
             });
             el.classList.add('selected');
             selectedSeatNumber = num;
-            const seatInfo = document.getElementById('selectedSeatInfo');
-            if (seatInfo) seatInfo.innerText = `Выбранное место: ${num}`;
+            var seatInfo = document.getElementById('selectedSeatInfo');
+            if (seatInfo) seatInfo.innerText = "Выбранное место: " + num;
             validateCashierForm();
         }
 
         function validateCashierForm() {
-            const input = document.getElementById('passengerName');
-            const buyBtn = document.getElementById('buyBtn');
+            var input = document.getElementById('passengerName');
+            var buyBtn = document.getElementById('buyBtn');
             if (!input || !buyBtn) return;
-            const name = input.value.trim();
+            var name = input.value.trim();
             buyBtn.disabled = !(name && selectedSeatNumber);
         }
 
         function toggleAdminMode() {
             isAdminMode = !isAdminMode;
-            const btn = document.getElementById('toggleAdminBtn');
-            const cashierPanel = document.getElementById('cashierPanel');
-            const adminPanel = document.getElementById('adminPanel');
+            var btn = document.getElementById('toggleAdminBtn');
+            var cashierPanel = document.getElementById('cashierPanel');
+            var adminPanel = document.getElementById('adminPanel');
 
             if (!btn) return;
 
@@ -393,10 +451,11 @@
             }
         }
 
+        // 6. Покупка билета кассиром
         async function buyTicket() {
-            const name = document.getElementById('passengerName').value.trim();
+            var name = document.getElementById('passengerName').value.trim();
             try {
-                const response = await fetch('/api/tickets/buy', {
+                var response = await fetch('/api/tickets/buy', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ tripId: selectedTripId, seatNumber: selectedSeatNumber, passengerName: name })
@@ -411,54 +470,65 @@
                 alert("Ошибка выполнения операции.");
             }
         }
-
+        // 7. Сохранение изменений существующего рейса (Админ)
         async function saveTripChanges() {
-            const route = document.getElementById('adminRoute').value.trim();
-            const time = document.getElementById('adminTime').value;
-            const price = document.getElementById('adminPrice').value;
-
+            if (!selectedTripId) return;
+            var route = document.getElementById('adminRoute').value.trim();
+            var time = document.getElementById('adminTime').value;
+            var price = parseFloat(document.getElementById('adminPrice').value);
             try {
-                await fetch(`/api/admin/trips/${selectedTripId}`, {
+                var response = await fetch('/api/admin/trips/' + selectedTripId, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ route, departureTime: time, price: parseFloat(price) })
+                    body: JSON.stringify({ route: route, departureTime: time, price: price })
                 });
-                alert("Рейс изменен!");
-                await loadTrips();
-            } catch (e) { alert("Ошибка сохранения"); }
+                if (response.ok) {
+                    alert("Рейс успешно изменен!");
+                    await loadTrips();
+                }
+            } catch (error) {
+                alert("Ошибка при сохранении рейса.");
+            }
         }
-
+        // 8. Создание нового рейса (Админ)
         async function createNewTrip() {
-            const route = document.getElementById('adminRoute').value.trim() || "Новый маршрут";
-            const time = document.getElementById('adminTime').value || new Date().toISOString();
-            const price = document.getElementById('adminPrice').value || 1000;
-
+            var route = document.getElementById('adminRoute').value.trim();
+            var time = document.getElementById('adminTime').value;
+            var price = parseFloat(document.getElementById('adminPrice').value);
+            if (!route || !time || isNaN(price)) {
+                alert("Заполните все поля администратора перед добавлением рейса!");
+                return;
+            }
             try {
-                await fetch('/api/admin/trips', {
+                var response = await fetch('/api/admin/trips', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ route, departureTime: time, price: parseFloat(price) })
+                    body: JSON.stringify({ route: route, departureTime: time, price: price })
                 });
-                alert("Рейс добавлен!");
-                await loadTrips();
-            } catch (e) { alert("Ошибка добавления"); }
+                if (response.ok) {
+                    alert("Новый рейс успешно добавлен!");
+                    await loadTrips();
+                }
+            } catch (error) {
+                alert("Ошибка при создании рейса.");
+            }
         }
-
+        // 9. Отмена/Удаление рейса (Админ)
         async function deleteTrip() {
-            if (!confirm("Удалить рейс?")) return;
+            if (!selectedTripId || !confirm("Вы уверены, что хотите отменить этот рейс?")) return;
             try {
-                await fetch(`/api/admin/trips/${selectedTripId}`, { method: 'DELETE' });
-                selectedTripId = null;
-                selectedSeatNumber = null;
-                await loadTrips();
-                document.getElementById('seatsContainer').innerHTML = '';
-            } catch (e) { alert("Ошибка удаления"); }
+                var response = await fetch('/api/admin/trips/' + selectedTripId, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    alert("Рейс успешно отменен!");
+                    selectedTripId = null;
+                    await loadTrips();
+                }
+            } catch (error) {
+                alert("Ошибка при удалении рейса.");
+            }
         }
-
-        // Ждем полной готовности структуры документа DOM, прежде чем слать запросы
-        document.addEventListener("DOMContentLoaded", () => {
-            loadTrips();
-        });
     </script>
 </body>
 </html>

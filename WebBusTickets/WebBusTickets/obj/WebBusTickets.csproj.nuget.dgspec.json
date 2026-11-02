@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\BusTicketApp\\WebBusTickets\\WebBusTickets\\WebBusTickets.csproj": {}
+    "F:\\BusTicketApp\\WebBusTickets\\WebBusTickets\\WebBusTickets.csproj": {}
   },
   "projects": {
-    "D:\\BusTicketApp\\WebBusTickets\\WebBusTickets\\WebBusTickets.csproj": {
+    "F:\\BusTicketApp\\WebBusTickets\\WebBusTickets\\WebBusTickets.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\BusTicketApp\\WebBusTickets\\WebBusTickets\\WebBusTickets.csproj",
+        "projectUniqueName": "F:\\BusTicketApp\\WebBusTickets\\WebBusTickets\\WebBusTickets.csproj",
         "projectName": "WebBusTickets",
-        "projectPath": "D:\\BusTicketApp\\WebBusTickets\\WebBusTickets\\WebBusTickets.csproj",
-        "packagesPath": "C:\\Users\\Student\\.nuget\\packages\\",
-        "outputPath": "D:\\BusTicketApp\\WebBusTickets\\WebBusTickets\\obj\\",
+        "projectPath": "F:\\BusTicketApp\\WebBusTickets\\WebBusTickets\\WebBusTickets.csproj",
+        "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
+        "outputPath": "F:\\BusTicketApp\\WebBusTickets\\WebBusTickets\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Student\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\User\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -26,6 +26,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -68,7 +69,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.313/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.319/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
