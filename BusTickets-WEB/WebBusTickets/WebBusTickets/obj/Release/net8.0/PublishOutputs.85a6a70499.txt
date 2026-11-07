@@ -1,8 +1,0 @@
-F:\BusTicketApp\BusTickets-WEB\WebBusTickets\publish\WebBusTickets.exe
-F:\BusTicketApp\BusTickets-WEB\WebBusTickets\publish\appsettings.Development.json
-F:\BusTicketApp\BusTickets-WEB\WebBusTickets\publish\appsettings.json
-F:\BusTicketApp\BusTickets-WEB\WebBusTickets\publish\bus_database.json
-F:\BusTicketApp\BusTickets-WEB\WebBusTickets\publish\WebBusTickets.dll
-F:\BusTicketApp\BusTickets-WEB\WebBusTickets\publish\WebBusTickets.deps.json
-F:\BusTicketApp\BusTickets-WEB\WebBusTickets\publish\WebBusTickets.runtimeconfig.json
-F:\BusTicketApp\BusTickets-WEB\WebBusTickets\publish\WebBusTickets.pdb
